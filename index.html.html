@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>مسابقة يوسف الصديق</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff7e0;--card:#ffffff;--ink:#3b2a14;--accent:#e8890c;--accent2:#7b4bd1;--good:#2e9e4f;--bad:#d9453b;--line:#f1d9a0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2112;--card:#3a2f1c;--ink:#fdf1d6;--line:#5a4826}}
+:root[data-theme="dark"]{--bg:#2a2112;--card:#3a2f1c;--ink:#fdf1d6;--line:#5a4826}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Cairo",Tahoma,"Segoe UI",Arial,sans-serif;min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:560px;padding:16px}
+.card{background:var(--card);border:3px solid var(--line);border-radius:24px;padding:20px;text-align:center;box-shadow:0 6px 0 var(--line)}
+h1{font-size:1.9rem;margin:6px 0;color:var(--accent)}
+.big{font-size:4.5rem;line-height:1.1}
+p{font-size:1.1rem;line-height:1.8;margin:8px 0}
+button{font-family:inherit;cursor:pointer}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:18px;padding:12px 28px;font-size:1.3rem;font-weight:900;box-shadow:0 5px 0 #a8620a}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a8620a}
+.top{display:flex;justify-content:space-between;align-items:center;font-weight:700;margin-bottom:10px}
+.bar{height:12px;background:var(--line);border-radius:8px;overflow:hidden;margin-bottom:14px}
+.bar i{display:block;height:100%;width:0;background:var(--accent2);transition:width .4s}
+.q{font-size:1.35rem;font-weight:900;margin:8px 0 16px}
+.opt{display:block;width:100%;margin:10px 0;padding:14px;font-size:1.15rem;font-weight:700;color:var(--ink);background:var(--bg);border:3px solid var(--line);border-radius:16px;text-align:right}
+.opt:active{transform:scale(.98)}
+.opt.good{background:var(--good);border-color:var(--good);color:#fff}
+.opt.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.fb{margin-top:12px;padding:12px;border-radius:14px;background:var(--bg);font-weight:700;display:none}
+.fb.show{display:block;animation:pop .3s}
+@keyframes pop{from{transform:scale(.9);opacity:0}to{transform:scale(1);opacity:1}}
+.stars{font-size:2.6rem;letter-spacing:6px}
+.hide{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+  <div id="start" class="card">
+    <div class="big">🧥👦🌾</div>
+    <h1>مسابقة يوسف الصديق</h1>
+    <p>هل تعرف قصة يوسف الحلو؟<br>جاوب على ١٠ أسئلة واجمع نجوم ⭐</p>
+    <button class="btn" onclick="startGame()">يلا نبدأ!</button>
+  </div>
+
+  <div id="game" class="card hide">
+    <div class="top"><span id="qn"></span><span id="sc"></span></div>
+    <div class="bar"><i id="pb"></i></div>
+    <div class="big" id="emo"></div>
+    <div class="q" id="qt"></div>
+    <div id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <button class="btn hide" id="next" style="margin-top:14px" onclick="nextQ()">التالي ⬅️</button>
+  </div>
+
+  <div id="end" class="card hide">
+    <div class="stars" id="stars"></div>
+    <h1 id="etitle"></h1>
+    <p id="emsg"></p>
+    <p style="font-weight:900">يوسف علّمنا: نخاف ربنا ونسامح الكل ❤️</p>
+    <button class="btn" onclick="startGame()">نلعب تاني 🔄</button>
+  </div>
+</div>
+
+<script>
+const Q=[
+{e:"👴",q:"مين هو أبو يوسف؟",o:["يعقوب","إبراهيم","إسحق","نوح"],a:0,f:"أبو يوسف هو يعقوب، وكان بيحبه جداً."},
+{e:"🧥",q:"إيه الهدية الحلوة اللي أخدها يوسف من أبوه؟",o:["خاتم ذهب","قميص ملوّن","عصاية","حصان"],a:1,f:"يعقوب عمل ليوسف قميص ملوّن جميل."},
+{e:"👬",q:"كان عند يوسف كام أخ؟",o:["٧ إخوة","١٠ إخوة","١١ أخ","٣ إخوة"],a:2,f:"يوسف كان عنده ١١ أخ، وإخواته اتغاروا منه."},
+{e:"🌾",q:"يوسف حلم إن حزم القمح بتاعة إخواته عملت إيه؟",o:["جريت","اتحرقت","سجدت لحزمته","اتبلّت"],a:2,f:"حزم إخواته سجدت لحزمة يوسف، وده كان حلم من ربنا."},
+{e:"🕳️",q:"إخوة يوسف رموه في بير، وبعدين عملوا إيه؟",o:["طلعوه وراحوا بيه البيت","باعوه للتجار","سابوه مكانه","أخدوا القميص بس"],a:1,f:"باعوه للتجار اللي كانوا رايحين مصر."},
+{e:"🏠",q:"يوسف اشتغل في مصر عند مين؟",o:["فرعون","فوطيفار","الساقي","الخباز"],a:1,f:"اشتغل عند فوطيفار، وربنا كان معاه وبارك كل حاجة بيعملها."},
+{e:"🙏",q:"يوسف رفض يعمل الغلط. ليه؟",o:["خايف من الناس","كان تعبان","لأنه بيخاف ربنا","كان نعسان"],a:2,f:"قال: «كيف أصنع هذا الشر العظيم وأخطئ إلى الله؟» ده الأمانة."},
+{e:"🐄",q:"فرعون حلم بسبع بقرات سمان وسبع عجاف. مين فسّر الحلم؟",o:["الحكماء","السحرة","يوسف","الساقي"],a:2,f:"ربنا أعطى يوسف حكمة يفسّر الحلم."},
+{e:"🏛️",q:"يوسف بقى إيه في مصر؟",o:["الثاني بعد فرعون","راعي غنم","بنّا","سجّان"],a:0,f:"فرعون جعله الثاني في المملكة، وخزّن القمح للسنين الصعبة."},
+{e:"🤗",q:"لما جه إخوة يوسف مصر، يوسف عمل إيه؟",o:["انتقم منهم","سامحهم وحضنهم","طردهم","اتخانق معاهم"],a:1,f:"يوسف سامحهم من قلبه. ده شبه يسوع اللي بيسامحنا."}
+];
+const $=id=>document.getElementById(id);
+let i=0,score=0,locked=false,cur=[];
+function show(id){["start","game","end"].forEach(x=>$(x).classList.toggle("hide",x!==id))}
+function startGame(){i=0;score=0;show("game");load()}
+function shuffle(a){for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]]}return a}
+function load(){
+  locked=false;const d=Q[i];
+  $("qn").textContent="سؤال "+(i+1)+" من "+Q.length;
+  $("sc").textContent="⭐ "+score;
+  $("pb").style.width=(i/Q.length*100)+"%";
+  $("emo").textContent=d.e;$("qt").textContent=d.q;
+  cur=shuffle(d.o.map((t,k)=>({t,ok:k===d.a})));
+  const box=$("opts");box.innerHTML="";
+  cur.forEach((c,k)=>{const b=document.createElement("button");b.className="opt";b.textContent=c.t;b.onclick=()=>pick(k,b);box.appendChild(b)});
+  $("fb").className="fb";$("next").classList.add("hide");
+}
+function pick(k,b){
+  if(locked)return;locked=true;
+  const ok=cur[k].ok;
+  if(ok){score++;b.classList.add("good")}else{b.classList.add("bad");[...$("opts").children].forEach((x,n)=>{if(cur[n].ok)x.classList.add("good")})}
+  $("sc").textContent="⭐ "+score;
+  $("fb").textContent=(ok?"🎉 برافو! ":"💛 معلش، حاول تاني المرة الجاية. ")+Q[i].f;
+  $("fb").className="fb show";
+  $("next").textContent=i===Q.length-1?"شوف نتيجتك 🏆":"التالي ⬅️";
+  $("next").classList.remove("hide");
+}
+function nextQ(){i++;i<Q.length?load():finish()}
+function finish(){
+  show("end");
+  const n=score>=9?3:score>=6?2:1;
+  $("stars").textContent="⭐".repeat(n)+"☆".repeat(3-n);
+  $("etitle").textContent="جبت "+score+" من "+Q.length;
+  $("emsg").textContent=score>=9?"ممتاز! إنت بطل قصة يوسف 🏆":score>=6?"شاطر جداً! كمّل وهتبقى بطل 💪":"حلو إنك حاولت! اسمع القصة تاني وجرّب من جديد 📖";
+}
+</script>
+</body>
+</html>
